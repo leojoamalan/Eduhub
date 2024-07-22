@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Student Dashboard</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="" name="keywords">
+    <meta content="" name="description">
+
+    <!-- Favicon -->
+    <link href="img/favicon.ico" rel="icon">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Icon Font Stylesheet -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <link href="lib/animate/animate.min.css" rel="stylesheet">
+    <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Template Stylesheet -->
+    <link href="css/style.css" rel="stylesheet">
+</head>
+
+<body>
+    <!-- Navbar Start -->
+    <nav class="navbar navbar-expand-lg bg-white navbar-light shadow sticky-top p-0">
+        <a href="index.html" class="navbar-brand d-flex align-items-center px-4 px-lg-5">
+            <h2 class="m-0 text-primary"><i class="fa fa-book me-3"></i>EduHub</h2>
+        </a>
+        <button type="button" class="navbar-toggler me-4" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+            <div class="navbar-nav ms-auto p-4 p-lg-0">
+                <a href="index.html" class="nav-item nav-link">Home</a>
+                <a href="about.html" class="nav-item nav-link">About</a>
+                <a href="courses.html" class="nav-item nav-link">Courses</a>
+                <a href="contact.html" class="nav-item nav-link">Contact</a>
+            </div>
+            <a href="" class="btn btn-primary py-4 px-lg-5 d-none d-lg-block">Join Now<i class="fa fa-arrow-right ms-3"></i></a>
+        </div>
+    </nav>
+    <!-- Navbar End -->
+
+    <!-- Dashboard Section Start -->
+    <div class="container-fluid py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="bg-light rounded p-4 p-sm-5">
+                        <h3 class="text-center mb-4">Student Dashboard</h3>
+                        <div class="mb-4">
+                            <label for="student-select" class="form-label">Select Student</label>
+                            <select class="form-control" id="student-select">
+                                <!-- Options will be populated dynamically -->
+                            </select>
+                        </div>
+                        <div id="dashboard-content">
+                            <h4 class="mb-3">Academic Records</h4>
+                            <div id="academic-records" class="mb-4"></div>
+                            <h4 class="mb-3">Assessments Taken</h4>
+                            <div id="assessments-taken" class="mb-4"></div>
+                            <h4 class="mb-3">Student Improvement Graphs</h4>
+                            <canvas id="academicProgressChart"></canvas>
+                            <canvas id="assessmentScoresChart"></canvas>
+                        </div>
+                        <div id="submission-status" class="bg-white rounded p-4" style="height: 100px; overflow-y: auto;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Dashboard Section End -->
+
+    <!-- Footer Start -->
+    <!-- ... Footer code remains the same ... -->
+
+    <!-- Back to Top -->
+    <a href="#" class="btn btn-lg btn-primary btn-lg-square rounded back-to-top"><i class="bi bi-arrow-up"></i></a>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="lib/wow/wow.min.js"></script>
+    <script src="lib/easing/easing.min.js"></script>
+    <script src="lib/waypoints/waypoints.min.js"></script>
+    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Template Javascript -->
+    <script src="js/main.js"></script>
+    
+    <!-- Dashboard Integration -->
+    <script>
+        $(document).ready(function () {
+            // Simulate fetching students data from backend
+            function fetchStudents() {
+                return [
+                    { id: 1, name: 'John Doe' },
+                    { id: 2, name: 'Jane Smith' },
+                ];
+            }
+
+            // Populate student select options
+            const students = fetchStudents();
+            const studentSelect = $('#student-select');
+            students.forEach(student => {
+                studentSelect.append(new Option(student.name, student.id));
+            });
+
+            // Handle student selection
+            studentSelect.change(function () {
+                const studentId = $(this).val();
+                if (studentId) {
+                    $('#submission-status').append(`<div><strong>Status:</strong> Fetching data for student ID ${studentId}...</div>`);
+                    $('#spinner').show();
+
+                    // Simulate fetching student academic records and assessments taken
+                    $.ajax({
+                        url: `/fetch-student-data/${studentId}`,  // URL to your backend API endpoint
+                        method: 'GET',
+                        success: function (response) {
+                            $('#academic-records').html(response.academicRecords);
+                            $('#assessments-taken').html(response.assessmentsTaken);
+                            renderCharts(response.academicProgress, response.assessmentScores);
+                            $('#submission-status').append(`<div><strong>Success:</strong> Data fetched successfully.</div>`);
+                            $('#spinner').hide();
+                        },
+                        error: function () {
+                            $('#submission-status').append(`<div><strong>Error:</strong> Failed to fetch data.</div>`);
+                            $('#spinner').hide();
+                        }
+                    });
+                }
+            });
+
+            function renderCharts(academicProgress, assessmentScores) {
+                const ctx1 = document.getElementById('academicProgressChart').getContext('2d');
+                const academicProgressChart = new Chart(ctx1, {
+                    type: 'line',
+                    data: {
+                        labels: academicProgress.labels,
+                        datasets: [{
+                            label: 'Academic Progress',
+                            data: academicProgress.data,
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                const ctx2 = document.getElementById('assessmentScoresChart').getContext('2d');
+                const assessmentScoresChart = new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels: assessmentScores.labels,
+                        datasets: [{
+                            label: 'Assessment Scores',
+                            data: assessmentScores.data,
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>
